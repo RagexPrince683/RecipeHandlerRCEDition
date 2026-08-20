@@ -1,34 +1,17 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            name = "forge"
-            url = "https://maven.minecraftforge.net/"
-        }
-        maven {
-            name = "anatawa12"
-            url = "https://maven.anatawa12.com/repository/maven-public/"
-        }
-    }
-    dependencies {
-        classpath('com.anatawa12.forge:ForgeGradle:1.2-1.0.+') {
-            changing = true
-        }
-    }
+plugins {
+    id 'com.gtnewhorizons.gtnhconvention'
 }
 
-apply plugin: 'forge'
+version = providers.gradleProperty('modVersion').get()
+group = providers.gradleProperty('modGroup').get()
 
-archivesBaseName = "NoMoreRecipeConflict"
-version = "0.3"
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-minecraft {
-    version = "1.7.10-10.13.2.1230"
-    runDir = "eclipse"
-    replace '$version', project.version
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
 
 sourceSets {
@@ -46,18 +29,6 @@ sourceSets {
     }
 }
 
-processResources {
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    filesMatching('mcmod.info') {
-        expand(version: project.version, mcversion: project.minecraft.version)
-    }
-}
-
-jar {
+tasks.named('jar') {
     includeEmptyDirs = false
-    exclude '**/*.java'
-    classifier = "(${minecraft.version})"
-    archiveName = "${archivesBaseName}-${version}${classifier}.${extension}"
 }

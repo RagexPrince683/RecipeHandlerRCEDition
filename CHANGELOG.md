@@ -1,7 +1,8 @@
-## Fix 1710 build system
-* Replace the Gradle-4.5-incompatible original ForgeGradle 1.2 plugin with the maintained Anatawa12 ForgeGradle 1.2 fork.
-* Compile the legacy `assets/recipehandler` source tree for Java 8 and package its language resources without including Java source files.
-* Use HTTPS build repositories and expand valid version strings in `mcmod.info`.
+## GTNH-ify the 1710 build system
+* Replace the obsolete ForgeGradle 1.2 build with the GTNH convention stack and Gradle 8.11.1 wrapper configuration.
+* Build Minecraft 1.7.10 against Forge 10.13.4.1614 and stable MCP mappings version 12 while retaining Java 8 bytecode.
+* Compile the legacy `assets/recipehandler` Java source tree and package only its language resources and root metadata files.
+* Generate `assets.recipehandler.Tags` for the mod version and expand GTNH project properties in `mcmod.info`.
 
 == NoMoreRecipeConflict 0.3 ==
 * More custom crafting support ?
