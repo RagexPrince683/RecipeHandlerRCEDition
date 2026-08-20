@@ -27,6 +27,12 @@ public final class ChangePacket {
         this.index = recipeIndex;
     }
 
+    public static ChangePacket select(int windowId, int slot, ItemStack stack, int recipeIndex) {
+        ChangePacket packet = new ChangePacket(slot, stack, recipeIndex);
+        packet.windowId = windowId;
+        return packet;
+    }
+
     public static ChangePacket bulk(int windowId, int slot, int recipeIndex) {
         ChangePacket packet = new ChangePacket(slot, null, recipeIndex);
         packet.action = 1;
@@ -56,16 +62,18 @@ public final class ChangePacket {
             handleBulkCraft(player);
             return null;
         }
-        if(itemstack != null && slot >= 0 && index >= 0) {
-            InventoryCrafting crafting = CraftingHandler.getCraftingMatrix(player.openContainer);
+        Container container = player.openContainer;
+        if(itemstack != null && slot >= 0 && index >= 0 && container != null
+                && container.windowId == windowId) {
+            InventoryCrafting crafting = CraftingHandler.getCraftingMatrix(container);
             if(crafting!=null) {
                 IRecipe recipe = CraftingHandler.getMatchingRecipe(crafting, player.worldObj, index);
                 ItemStack itr = recipe == null ? null : recipe.getCraftingResult(crafting);
                 if(ItemStack.areItemStacksEqual(itr, itemstack)) {
-                    IInventory result = CraftingHandler.getResultSlot(player.openContainer, slot+1);
+                    IInventory result = CraftingHandler.getResultSlot(container, slot+1);
                     if (result != null) {
                         result.setInventorySlotContents(slot, itr.copy());
-                        return new ChangePacket(slot, itr, index);
+                        return select(windowId, slot, itr, index);
                     }
                 }
             }
@@ -137,5 +145,9 @@ public final class ChangePacket {
         FMLProxyPacket proxy = new FMLProxyPacket(buf, CHANNEL);
         proxy.setTarget(side);
         return proxy;
+    }
+
+    int getWindowId() {
+        return windowId;
     }
 }

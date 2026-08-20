@@ -1,3 +1,8 @@
+## Preserve alternate recipes across single crafts
+* Restore an explicitly selected duplicate recipe after vanilla recalculates the crafting result following a normal craft.
+* Suppress duplicate restoration requests while a validated server response is pending, and keep bulk Shift+click handling separate.
+* Validate the open container window, selected matching-recipe index, and expected output before changing the server result inventory.
+
 ## Fix Forge 1.7.10 bulk-crafting input compatibility
 * Replace the unavailable `GuiScreenEvent.MouseInputEvent.Pre` hook with end-of-client-tick mouse polling.
 * Preserve alternate-recipe bulk shift-click crafting while limiting requests to one per held click on the crafting result slot.
