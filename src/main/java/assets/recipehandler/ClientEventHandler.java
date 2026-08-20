@@ -16,6 +16,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -29,6 +30,12 @@ public final class ClientEventHandler implements RecipeMod.IRegister{
     private boolean pressed = false;
     private boolean bulkClickHeld = false;
     private Container bulkClickContainer = null;
+    private Container selectedContainer = null;
+    private int selectedRecipeIndex = -1;
+    private Container pendingContainer = null;
+    private int pendingRecipeIndex = -1;
+    private ItemStack pendingResult = null;
+    private ItemStack[] pendingMatrix = null;
 
     @Override
     public void register(){
@@ -69,6 +76,7 @@ public final class ClientEventHandler implements RecipeMod.IRegister{
             // FML posts the END phase from onPostClientTick, after Minecraft.runTick
             // has dispatched mouse input to the open GuiScreen.
             handleBulkCraftClick();
+            maintainSelectedRecipe();
         }
     }
 
@@ -126,6 +134,93 @@ public final class ClientEventHandler implements RecipeMod.IRegister{
         bulkClickContainer = null;
     }
 
+    /** Restore an explicitly selected duplicate after vanilla recalculates recipe zero. */
+    private void maintainSelectedRecipe() {
+        Minecraft minecraft = FMLClientHandler.instance().getClient();
+        EntityPlayer player = getPlayer();
+        Container container = player == null ? null : player.openContainer;
+        if (!(minecraft.currentScreen instanceof GuiContainer) || container == null
+                || container != selectedContainer) {
+            clearSelectionState();
+            return;
+        }
+
+        InventoryCrafting craft = CraftingHandler.getCraftingMatrix(container);
+        Slot resultSlot = CraftingHandler.getCraftingResultSlot(container);
+        int count = CraftingHandler.getMatchingRecipeCount(craft, minecraft.theWorld);
+        if (craft == null || resultSlot == null || count < 2 || selectedRecipeIndex <= 0
+                || selectedRecipeIndex >= count) {
+            clearSelectionState();
+            return;
+        }
+
+        IRecipe recipe = CraftingHandler.getMatchingRecipe(craft, minecraft.theWorld, selectedRecipeIndex);
+        ItemStack expected = recipe == null ? null : recipe.getCraftingResult(craft);
+        if (expected == null) {
+            clearSelectionState();
+            return;
+        }
+
+        ItemStack actual = resultSlot.getStack();
+        if (ItemStack.areItemStacksEqual(actual, expected)) {
+            clearPendingRestore();
+            oldItem = expected.copy();
+            return;
+        }
+
+        if (pendingContainer != container || pendingRecipeIndex != selectedRecipeIndex
+                || !ItemStack.areItemStacksEqual(pendingResult, expected)
+                || !matrixEquals(craft, pendingMatrix)) {
+            clearPendingRestore();
+        }
+        // A held bulk click has its own validated server operation and restoration.
+        if (bulkClickHeld || pendingContainer == container) {
+            return;
+        }
+
+        pendingContainer = container;
+        pendingRecipeIndex = selectedRecipeIndex;
+        pendingResult = expected.copy();
+        pendingMatrix = copyMatrix(craft);
+        RecipeMod.networkWrapper.sendToServer(ChangePacket.select(container.windowId,
+                resultSlot.getSlotIndex(), expected, selectedRecipeIndex).toProxy(Side.SERVER));
+    }
+
+    private ItemStack[] copyMatrix(InventoryCrafting craft) {
+        ItemStack[] contents = new ItemStack[craft.getSizeInventory()];
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack stack = craft.getStackInSlot(i);
+            contents[i] = stack == null ? null : stack.copy();
+        }
+        return contents;
+    }
+
+    private boolean matrixEquals(InventoryCrafting craft, ItemStack[] contents) {
+        if (contents == null || contents.length != craft.getSizeInventory()) {
+            return false;
+        }
+        for (int i = 0; i < contents.length; i++) {
+            if (!ItemStack.areItemStacksEqual(contents[i], craft.getStackInSlot(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void clearPendingRestore() {
+        pendingContainer = null;
+        pendingRecipeIndex = -1;
+        pendingResult = null;
+        pendingMatrix = null;
+    }
+
+    private void clearSelectionState() {
+        selectedContainer = null;
+        selectedRecipeIndex = -1;
+        oldItem = null;
+        clearPendingRestore();
+    }
+
     private boolean isMouseOver(GuiContainer gui, Slot slot) {
         Minecraft minecraft = FMLClientHandler.instance().getClient();
         int mouseX = Mouse.getX() * gui.width / minecraft.displayWidth;
@@ -137,13 +232,18 @@ public final class ClientEventHandler implements RecipeMod.IRegister{
     }
 
     public void pressed() {
-        InventoryCrafting craft = CraftingHandler.getCraftingMatrix(getPlayer().openContainer);
+        Container container = getPlayer().openContainer;
+        InventoryCrafting craft = CraftingHandler.getCraftingMatrix(container);
         if (craft != null) {
             ItemStack res = CraftingHandler.findNextMatchingRecipe(craft, getWorld());
-            if (res != null && !ItemStack.areItemStacksEqual(res, oldItem)) {
+            if (res != null) {
                 int selectedIndex = CraftingHandler.getNormalizedRecipeIndex(craft, getWorld());
-                RecipeMod.networkWrapper.sendToServer(new ChangePacket(0, res, selectedIndex).toProxy(Side.SERVER));
-                oldItem = res;
+                selectedContainer = selectedIndex > 0 ? container : null;
+                selectedRecipeIndex = selectedIndex > 0 ? selectedIndex : -1;
+                clearPendingRestore();
+                RecipeMod.networkWrapper.sendToServer(ChangePacket.select(container.windowId,
+                        0, res, selectedIndex).toProxy(Side.SERVER));
+                oldItem = res.copy();
             }
         }
     }

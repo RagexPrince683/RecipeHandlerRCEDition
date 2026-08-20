@@ -22,7 +22,12 @@ public final class PacketHandler implements RecipeMod.IRegister {
     @SubscribeEvent
     public void onClientPacket(FMLNetworkEvent.ClientCustomPacketEvent event){
         ChangePacket message = new ChangePacket().fromBytes(event.packet.payload());
-        IInventory result = CraftingHandler.getResultSlot(RecipeMod.registry.getPlayer().openContainer, message.slot+1);
+        EntityPlayer player = RecipeMod.registry.getPlayer();
+        if (player == null || player.openContainer == null
+                || player.openContainer.windowId != message.getWindowId() || message.itemstack == null) {
+            return;
+        }
+        IInventory result = CraftingHandler.getResultSlot(player.openContainer, message.slot+1);
         if (result != null) {
             result.setInventorySlotContents(message.slot, message.itemstack.copy());
         }
