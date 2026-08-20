@@ -1,3 +1,9 @@
+## Fix alternate-recipe shift-click bulk crafting
+* Intercept shift-left-clicks only on a selected conflicting crafting result and send a dedicated bulk-craft request.
+* Validate the open window, result slot, matching-recipe position, and live crafting matrix on the server.
+* Reuse vanilla container transfers and `SlotCrafting` pickup handling for every craft while preserving the selected alternate result between iterations.
+* Stop safely when the recipe no longer matches, inventory transfer fails, the crafting matrix makes no progress, or the container changes.
+
 ## Fix GTNH build migration on the 1710 branch
 * Replace the obsolete ForgeGradle 1.2 build with the GTNH convention stack and Gradle 8.11.1 wrapper configuration.
 * Build Minecraft 1.7.10 against Forge 10.13.4.1614 and stable MCP mappings version 12 while retaining Java 8 bytecode.

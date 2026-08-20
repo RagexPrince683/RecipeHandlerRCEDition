@@ -6,7 +6,6 @@ import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -17,7 +16,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 public final class ClientEventHandler implements RecipeMod.IRegister{
     private KeyBinding key;
@@ -31,8 +29,7 @@ public final class ClientEventHandler implements RecipeMod.IRegister{
             ClientRegistry.registerKeyBinding(key);
         }
         FMLCommonHandler.instance().bus().register(this);
-        if(RecipeMod.cycleButton)
-            MinecraftForge.EVENT_BUS.register(GuiEventHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(GuiEventHandler.INSTANCE);
         if(RecipeMod.cornerText)
             MinecraftForge.EVENT_BUS.register(this);
     }
@@ -68,20 +65,6 @@ public final class ClientEventHandler implements RecipeMod.IRegister{
                 } else if (pressed)
                     pressed = false;
             }
-            if(event.phase == TickEvent.Phase.END && Mouse.isButtonDown(0) && GuiScreen.isShiftKeyDown()){//Shift click
-                IInventory result = CraftingHandler.getResultSlot(getPlayer().openContainer, 1);
-                if(result != null) {
-                    if(oldItem != null && !ItemStack.areItemStacksEqual(oldItem, result.getStackInSlot(0))){
-                        InventoryCrafting craft = CraftingHandler.getCraftingMatrix(getPlayer().openContainer);
-                        if(craft != null){
-                            ItemStack res = CraftingHandler.findMatchingRecipe(craft, getWorld());
-                            if(res != null){
-                                RecipeMod.networkWrapper.sendToServer(new ChangePacket(0, res, CraftingHandler.getRecipeIndex()).toProxy(Side.SERVER));
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -90,7 +73,8 @@ public final class ClientEventHandler implements RecipeMod.IRegister{
         if (craft != null) {
             ItemStack res = CraftingHandler.findNextMatchingRecipe(craft, getWorld());
             if (res != null && !ItemStack.areItemStacksEqual(res, oldItem)) {
-                RecipeMod.networkWrapper.sendToServer(new ChangePacket(0, res, CraftingHandler.getRecipeIndex()).toProxy(Side.SERVER));
+                int selectedIndex = CraftingHandler.getNormalizedRecipeIndex(craft, getWorld());
+                RecipeMod.networkWrapper.sendToServer(new ChangePacket(0, res, selectedIndex).toProxy(Side.SERVER));
                 oldItem = res;
             }
         }
