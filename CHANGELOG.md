@@ -1,3 +1,7 @@
+## Fix Forge 1.7.10 bulk-crafting input compatibility
+* Replace the unavailable `GuiScreenEvent.MouseInputEvent.Pre` hook with end-of-client-tick mouse polling.
+* Preserve alternate-recipe bulk shift-click crafting while limiting requests to one per held click on the crafting result slot.
+
 ## Fix alternate-recipe shift-click bulk crafting
 * Intercept shift-left-clicks only on a selected conflicting crafting result and send a dedicated bulk-craft request.
 * Validate the open window, result slot, matching-recipe position, and live crafting matrix on the server.

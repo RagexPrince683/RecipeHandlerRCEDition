@@ -6,12 +6,8 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.InventoryEffectRenderer;
 import net.minecraft.inventory.InventoryCrafting;
-import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiScreenEvent;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.ReflectionHelper;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -33,34 +29,6 @@ public final class GuiEventHandler {
                 event.buttonList.add(new CreativeButton(event.buttonList.size() + 2, guiLeft, guiTop));
             }
         }
-    }
-
-    @SubscribeEvent
-    public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre event) {
-        if (!(event.gui instanceof GuiContainer) || Mouse.getEventButton() != 0
-                || !Mouse.getEventButtonState() || !GuiContainer.isShiftKeyDown()) {
-            return;
-        }
-        GuiContainer gui = (GuiContainer) event.gui;
-        InventoryCrafting craft = CraftingHandler.getCraftingMatrix(gui.inventorySlots);
-        Slot result = CraftingHandler.getCraftingResultSlot(gui.inventorySlots);
-        int selected = CraftingHandler.getNormalizedRecipeIndex(craft, Minecraft.getMinecraft().theWorld);
-        if (result == null || selected <= 0 || CraftingHandler.getMatchingRecipeCount(craft,
-                Minecraft.getMinecraft().theWorld) < 2 || !isMouseOver(gui, result)) {
-            return;
-        }
-        event.setCanceled(true);
-        RecipeMod.networkWrapper.sendToServer(ChangePacket.bulk(gui.inventorySlots.windowId,
-                result.slotNumber, selected).toProxy(Side.SERVER));
-    }
-
-    private boolean isMouseOver(GuiContainer gui, Slot slot) {
-        int mouseX = Mouse.getEventX() * gui.width / Minecraft.getMinecraft().displayWidth;
-        int mouseY = gui.height - Mouse.getEventY() * gui.height / Minecraft.getMinecraft().displayHeight - 1;
-        int left = ReflectionHelper.getPrivateValue(GuiContainer.class, gui, "guiLeft", "field_147003_i");
-        int top = ReflectionHelper.getPrivateValue(GuiContainer.class, gui, "guiTop", "field_147009_r");
-        return mouseX >= left + slot.xDisplayPosition - 1 && mouseX < left + slot.xDisplayPosition + 17
-                && mouseY >= top + slot.yDisplayPosition - 1 && mouseY < top + slot.yDisplayPosition + 17;
     }
 
     public final class CreativeButton extends GuiButton {
