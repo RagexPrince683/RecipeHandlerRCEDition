@@ -2,14 +2,14 @@
 {
   "modid": "${modId}",
   "name": "${modName}",
-  "description": "Switch between conflicting recipes",
+  "description": "Switch between conflicting recipes properly",
   "version": "${modVersion}",
   "credits": "",
   "logoFile": "",
   "mcversion": "${minecraftVersion}",
   "url": "http://www.minecraftforum.net/topic/1098727-",
   "updateUrl": "",
-  "authorList": ["stimmedcow","GotoLink"],
+  "authorList": ["stimmedcow","GotoLink", "RagexPrince683"],
   "parent":"",
   "screenshots": [],
   "dependencies": []

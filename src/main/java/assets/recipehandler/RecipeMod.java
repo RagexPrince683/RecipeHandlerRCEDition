@@ -15,7 +15,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import net.minecraftforge.common.config.Configuration;
 
-@Mod(modid = "recipehandler", name = "NoMoreRecipeConflict", version = Tags.VERSION)
+@Mod(modid = "recipehandlerRC", name = "NoMoreRecipeConflictFixed", version = Tags.VERSION)
 public final class RecipeMod {
     @SidedProxy(clientSide = "assets.recipehandler.ClientEventHandler", serverSide = "assets.recipehandler.PacketHandler")
     public static IRegister registry;
@@ -29,18 +29,18 @@ public final class RecipeMod {
 			GameRegistry.addShapelessRecipe(new ItemStack(Items.golden_apple), Blocks.planks, Items.stick);
 			GameRegistry.addShapelessRecipe(new ItemStack(Items.apple), Blocks.planks, Items.stick);
 		}
-		if (event.getSide().isClient()) {
-            if(event.getSourceFile().getName().endsWith(".jar")){
-                try {
-                    Class.forName("mods.mud.ModUpdateDetector").getDeclaredMethod("registerMod", ModContainer.class, String.class, String.class).invoke(null,
-                            FMLCommonHandler.instance().findContainerFor(this),
-                            "https://raw.github.com/GotoLink/RecipeHandler/master/update.xml",
-                            "https://raw.github.com/GotoLink/RecipeHandler/master/changelog.md"
-                    );
-                } catch (Throwable ignored) {
-                }
-            }
-		}
+		//if (event.getSide().isClient()) {
+        //    if(event.getSourceFile().getName().endsWith(".jar")){
+        //        //try {
+        //        //    Class.forName("mods.mud.ModUpdateDetector").getDeclaredMethod("registerMod", ModContainer.class, String.class, String.class).invoke(null,
+        //        //            FMLCommonHandler.instance().findContainerFor(this),
+        //        //            "https://raw.github.com/GotoLink/RecipeHandler/master/update.xml",
+        //        //            "https://raw.github.com/GotoLink/RecipeHandler/master/changelog.md"
+        //        //    );
+        //        //} catch (Throwable ignored) {
+        //        //}
+        //    }
+		//}
         try{
             Configuration config = new Configuration(event.getSuggestedConfigurationFile());
             if(config.get(Configuration.CATEGORY_GENERAL, "Enable Custom Crafting Detection", true, "Tries do detect other crafting systems, disable for less processing").getBoolean())
