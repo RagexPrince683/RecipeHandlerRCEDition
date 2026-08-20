@@ -1,12 +1,12 @@
 [
 {
-  "modid": "recipehandler",
-  "name": "NoMoreRecipeConflict",
+  "modid": "${modId}",
+  "name": "${modName}",
   "description": "Switch between conflicting recipes",
-  "version": "$version",
+  "version": "${modVersion}",
   "credits": "",
   "logoFile": "",
-  "mcversion": "$mcversion",
+  "mcversion": "${minecraftVersion}",
   "url": "http://www.minecraftforum.net/topic/1098727-",
   "updateUrl": "",
   "authorList": ["stimmedcow","GotoLink"],
