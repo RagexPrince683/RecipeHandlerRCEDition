@@ -1,3 +1,10 @@
+# Build system repair
+
+* Replaced the mutable ForgeGradle snapshot build with a single RetroFuturaGradle 1.4.0 setup for Minecraft 1.12.2.
+* Pinned Forge 14.23.4.2745 and the snapshot_20180801 mappings in `gradle.properties`.
+* Updated the wrapper to Gradle 8.5 and retained Java 8 bytecode output.
+* Preserved the legacy Java and language-resource layout through explicit source sets.
+
 == NoMoreRecipeConflict 0.8 ==
 * Made switch button internal delay more consistent
 * Added shift click behavior (keep shift key down to continue craft)
