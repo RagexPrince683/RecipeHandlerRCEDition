@@ -10,6 +10,100 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+/*
+ * Development mods
+ *
+ * devmods/*.jar
+ *     Normal production/SRG-obfuscated mod jars.
+ *     RetroFuturaGradle remaps these into the MCP development environment.
+ *
+ * devmods/deobf/*.jar
+ *     Already-deobfuscated development jars.
+ *     These are loaded directly without remapping.
+ */
+def productionDevMods = fileTree('devmods') {
+    include '*.jar'
+}
+
+def deobfDevMods = fileTree('devmods/deobf') {
+    include '*.jar'
+}
+
+def remappedDevModsDir = layout.buildDirectory.dir('devmods/remapped')
+
+configurations.create('remappedDevMods') {
+    canBeConsumed = false
+    canBeResolved = true
+    visible = false
+}
+
+dependencies {
+    /*
+     * Standard development dependencies.
+     */
+    devOnlyNonPublishable("com.github.GTNewHorizons:CodeChickenCore:1.4.17:dev")
+    devOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.8.118-GTNH:dev")
+
+    /*
+     * Remap ordinary production mod jars from devmods/.
+     */
+    remappedDevMods(rfg.deobf(productionDevMods))
+
+    /*
+     * Make the remapped jars available to both compilation and runClient/runServer.
+     */
+    devOnlyNonPublishable(
+            fileTree(remappedDevModsDir) {
+                include '*.jar'
+            }
+    )
+
+    /*
+     * Already-deobfuscated development jars do not need RFG remapping.
+     */
+    devOnlyNonPublishable(deobfDevMods)
+}
+
+/*
+ * Prepare external development mods before compiling or launching Minecraft.
+ */
+tasks.register('prepareDevMods') {
+    group = 'forgegradle'
+    description = 'Remaps production mod jars from devmods for the MCP development environment.'
+
+    inputs.files(productionDevMods)
+    outputs.dir(remappedDevModsDir)
+
+    doLast {
+        File destination = remappedDevModsDir.get().asFile
+
+        destination.mkdirs()
+        delete(destination)
+
+        copy {
+            from(configurations.remappedDevMods)
+            into(destination)
+        }
+    }
+}
+
+/*
+ * Make sure remapped compatibility-test mods exist before anything needs them.
+ */
+def prepareDevModsTask = tasks.named('prepareDevMods')
+
+tasks.named('compileJava') {
+    dependsOn(prepareDevModsTask)
+}
+
+tasks.named('runClient') {
+    dependsOn(prepareDevModsTask)
+}
+
+tasks.named('runServer') {
+    dependsOn(prepareDevModsTask)
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }

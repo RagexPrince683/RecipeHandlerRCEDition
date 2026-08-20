@@ -1,7 +1,8 @@
-## GTNH-ify the 1710 build system
+## Fix GTNH build migration on the 1710 branch
 * Replace the obsolete ForgeGradle 1.2 build with the GTNH convention stack and Gradle 8.11.1 wrapper configuration.
 * Build Minecraft 1.7.10 against Forge 10.13.4.1614 and stable MCP mappings version 12 while retaining Java 8 bytecode.
-* Compile the legacy `assets/recipehandler` Java source tree and package only its language resources and root metadata files.
+* Move Java sources, language files, and mod metadata into the standard Gradle source and resource directories required by GTNH structure validation.
+* Remove the legacy root-directory `sourceSets` workaround while keeping GTNH structure validation enabled.
 * Generate `assets.recipehandler.Tags` for the mod version and expand GTNH project properties in `mcmod.info`.
 
 == NoMoreRecipeConflict 0.3 ==
