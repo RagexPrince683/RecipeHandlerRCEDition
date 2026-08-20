@@ -3,49 +3,61 @@ buildscript {
         mavenCentral()
         maven {
             name = "forge"
-            url = "http://files.minecraftforge.net/maven"
+            url = "https://maven.minecraftforge.net/"
         }
         maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            name = "anatawa12"
+            url = "https://maven.anatawa12.com/repository/maven-public/"
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath('com.anatawa12.forge:ForgeGradle:1.2-1.0.+') {
+            changing = true
+        }
     }
 }
+
 apply plugin: 'forge'
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+
+archivesBaseName = "NoMoreRecipeConflict"
+version = "0.3"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 minecraft {
     version = "1.7.10-10.13.2.1230"
     runDir = "eclipse"
-    replace '$version', version
+    replace '$version', project.version
 }
-archivesBaseName = "NoMoreRecipeConflict"
-version = "0.3"
-sourceSets.main.java{srcDirs project.projectDir.getPath() include("assets/**")}
-sourceSets.main.resources{srcDirs project.projectDir.getPath() include("assets/**", "*.info" , "*.mcmeta")}
+
+sourceSets {
+    main {
+        java {
+            srcDir project.projectDir
+            include 'assets/recipehandler/**/*.java'
+        }
+        resources {
+            srcDir project.projectDir
+            include 'assets/recipehandler/lang/**/*.lang'
+            include 'mcmod.info'
+            include 'pack.mcmeta'
+        }
+    }
+}
+
 processResources {
-    // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
-    // replace stuff in mcmod.info, nothing else
-    from(project.sourceSets.main.resources.srcDirs) {
-        include "mcmod.info"
-        // replace version and mcversion
-        expand([version:project.version, mcversion:project.minecraft.version])
-    }
-    // copy everything else, thats not mcmod.info
-    from(project.sourceSets.main.resources.srcDirs) {
-        include("*.lang", "pack.mcmeta")
+
+    filesMatching('mcmod.info') {
+        expand(version: project.version, mcversion: project.minecraft.version)
     }
 }
+
 jar {
-    //Keep the jar as clean as possible
     includeEmptyDirs = false
-    exclude('*.java')
-    //Append with minecraft version
-    classifier = "("+minecraft.version+")"
-    archiveName = archivesBaseName + "-" + version + classifier+"."+extension
+    exclude '**/*.java'
+    classifier = "(${minecraft.version})"
+    archiveName = "${archivesBaseName}-${version}${classifier}.${extension}"
 }
