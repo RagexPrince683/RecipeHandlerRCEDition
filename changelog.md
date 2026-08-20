@@ -1,3 +1,8 @@
+## Fix 1710 build system
+* Replace the Gradle-4.5-incompatible original ForgeGradle 1.2 plugin with the maintained Anatawa12 ForgeGradle 1.2 fork.
+* Compile the legacy `assets/recipehandler` source tree for Java 8 and package its language resources without including Java source files.
+* Use HTTPS build repositories and expand valid version strings in `mcmod.info`.
+
 == NoMoreRecipeConflict 0.3 ==
 * More custom crafting support ?
 * Keep crafting result selected on shift-click
