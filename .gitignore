@@ -8,5 +8,7 @@
 !gradle*
 !update.xml
 !update.json
-!changelog.md
+!CHANGELOG.md
+!BUILDING.md
 !README.md
+!settings.gradle
