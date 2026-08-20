@@ -14,21 +14,6 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir project.projectDir
-            include 'assets/recipehandler/**/*.java'
-        }
-        resources {
-            srcDir project.projectDir
-            include 'assets/recipehandler/lang/**/*.lang'
-            include 'mcmod.info'
-            include 'pack.mcmeta'
-        }
-    }
-}
-
 tasks.named('jar') {
     includeEmptyDirs = false
 }
