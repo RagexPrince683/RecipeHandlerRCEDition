@@ -78,7 +78,7 @@ public final class CraftingHandler {
         return findMatchingRecipe(craft, world);
     }
 
-	public static ItemStack findMatchingRecipe(InventoryCrafting craft, World world) {
+    public static ItemStack findMatchingRecipe(InventoryCrafting craft, World world) {
 		if (CraftingManager.getInstance().findMatchingRecipe(craft, world) != null) {
 			List<ItemStack> result = getCraftResult(craft, world);
 			if (result.size() == 0) {
@@ -98,6 +98,53 @@ public final class CraftingHandler {
 		}
 		return null;
 	}
+
+    /** Resolve a matching recipe by its position, without using the process-wide client selection. */
+    public static IRecipe getMatchingRecipe(InventoryCrafting craft, World world, int index) {
+        if (craft == null || world == null || index < 0) {
+            return null;
+        }
+        int matchingIndex = 0;
+        for (Object object : CraftingManager.getInstance().getRecipeList()) {
+            IRecipe recipe = (IRecipe) object;
+            if (recipe.matches(craft, world)) {
+                if (matchingIndex == index) {
+                    return recipe;
+                }
+                matchingIndex++;
+            }
+        }
+        return null;
+    }
+
+    public static int getMatchingRecipeCount(InventoryCrafting craft, World world) {
+        int count = 0;
+        if (craft != null && world != null) {
+            for (Object object : CraftingManager.getInstance().getRecipeList()) {
+                if (((IRecipe) object).matches(craft, world)) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    public static int getNormalizedRecipeIndex(InventoryCrafting craft, World world) {
+        int count = getMatchingRecipeCount(craft, world);
+        return count == 0 ? -1 : ((recipeIndex % count) + count) % count;
+    }
+
+    public static Slot getCraftingResultSlot(Container container) {
+        if (container != null) {
+            for (Object object : container.inventorySlots) {
+                Slot slot = (Slot) object;
+                if (slot instanceof SlotCrafting) {
+                    return slot;
+                }
+            }
+        }
+        return null;
+    }
 
 	public static List<ItemStack> getCraftResult(InventoryCrafting craft, World world) {
 		Iterator<?> recipes = CraftingManager.getInstance().getRecipeList().iterator();
